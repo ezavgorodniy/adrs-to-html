@@ -22,4 +22,3 @@ libgit2: 1.7.1 (sys:0.18.1 system)
 libcurl: 8.4.0 (sys:0.4.68+curl-8.4.0 system ssl:(SecureTransport) LibreSSL/3.3.6)
 os: Mac OS 14.2.1 [64-bit]
 ```
-
