@@ -39,6 +39,16 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                     result.push_str(&code.value);
                     result.push_str(&format!("</code>"));
                 },
+                mdast::Node::List(_) => {
+                    result.push_str(&format!("<ul>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</ul>"));
+                },
+                mdast::Node::ListItem(_) => {
+                    result.push_str(&format!("<li>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</li>"));
+                },
                 _ => {
                     result.push_str(&format!("<pre>"));
                     process_node(result, internal_child);
@@ -107,5 +117,13 @@ mod tests {
         let result = generate_adr_html(&String::from("```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<code>fn main() {\n    println!(\"Hello, world!\");\n}</code>"))
+    }
+
+    #[test]
+    fn generate_adr_html_list_should_return_bullet_list() {
+        let result = generate_adr_html(&String::from("- Item1
+        - Item2"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<ul><li><pre>Item1\n- Item2</pre></li></ul>"))
     }
 }
