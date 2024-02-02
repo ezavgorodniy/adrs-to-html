@@ -24,87 +24,15 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                 mdast::Node::Text(text) => {
                     result.push_str(&text.value);
                 },
-                mdast::Node::Paragraph(_) => {
-                    result.push_str("<p>");
-                    process_node(result, internal_child);
-                    result.push_str("</p>");
-                },
                 mdast::Node::Heading(heading) => {
                     result.push_str(&format!("<h{}>", heading.depth));
                     process_node(result, internal_child);
                     result.push_str(&format!("</h{}>", heading.depth));
                 },
-                mdast::Node::List(_) => {
-                    result.push_str(&format!("<ul>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</ul>"));
-                },
-                mdast::Node::ListItem(_) => {
-                    result.push_str(&format!("<li>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</li>"));
-                },
-                mdast::Node::Code(_) => {
-                    result.push_str(&format!("<code>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</code>"));
-                },
                 mdast::Node::Link(link) => {
                     result.push_str(&format!("<a href=\"{}\">", link.url));
                     process_node(result, internal_child);
                     result.push_str(&format!("</a>"));
-                },
-                mdast::Node::Image(image) => {
-                    result.push_str(&format!("<img src=\"{}\">", image.url));
-                    process_node(result, internal_child);
-                },
-                mdast::Node::Emphasis(_) => {
-                    result.push_str(&format!("<em>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</em>"));
-                },
-                mdast::Node::Strong(_) => {
-                    result.push_str(&format!("<strong>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</strong>"));
-                },
-                mdast::Node::ThematicBreak(_) => {
-                    result.push_str(&format!("<hr>"));
-                    process_node(result, internal_child);
-                },
-                mdast::Node::BlockQuote(_) => {
-                    result.push_str(&format!("<blockquote>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</blockquote>"));
-                },
-                mdast::Node::Html(html) => {
-                    result.push_str(&format!("{}", html.value));
-                    process_node(result, internal_child);
-                },
-                mdast::Node::FootnoteReference(_) => {
-                    result.push_str(&format!("<sup>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</sup>"));
-                },
-                mdast::Node::FootnoteDefinition(_) => {
-                    result.push_str(&format!("<sup>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</sup>"));
-                },
-                mdast::Node::Table(_) => {
-                    result.push_str(&format!("<table>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</table>"));
-                },
-                mdast::Node::TableRow(_) => {
-                    result.push_str(&format!("<tr>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</tr>"));
-                },
-                mdast::Node::TableCell(_) => {
-                    result.push_str(&format!("<td>"));
-                    process_node(result, internal_child);
-                    result.push_str(&format!("</td>"));
                 },
                 _ => {
                     result.push_str(&format!("<pre>"));
@@ -156,9 +84,16 @@ mod tests {
     }
 
     #[test]
-    fn generate_adr_html_heading_sixth_level_should_return_h4() {
+    fn generate_adr_html_heading_sixth_level_should_return_h6() {
         let result = generate_adr_html(&String::from("###### Test"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<h6>Test</h6>"))
+    }
+
+    #[test]
+    fn generate_adr_html_link_should_return_anchor_tagged_text() {
+        let result = generate_adr_html(&String::from("[Test](https://test.com)"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<pre><a href=\"https://test.com\">Test</a></pre>"))
     }
 }
