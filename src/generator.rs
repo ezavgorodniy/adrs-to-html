@@ -34,6 +34,11 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                     process_node(result, internal_child);
                     result.push_str(&format!("</a>"));
                 },
+                mdast::Node::Code(code) => {
+                    result.push_str(&format!("<code>"));
+                    result.push_str(&code.value);
+                    result.push_str(&format!("</code>"));
+                },
                 _ => {
                     result.push_str(&format!("<pre>"));
                     process_node(result, internal_child);
@@ -95,5 +100,12 @@ mod tests {
         let result = generate_adr_html(&String::from("[Test](https://test.com)"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<pre><a href=\"https://test.com\">Test</a></pre>"))
+    }
+
+    #[test]
+    fn generate_adr_html_code_example_should_return_code() {
+        let result = generate_adr_html(&String::from("```rust\nfn main() {\n    println!(\"Hello, world!\");\n}\n```"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<code>fn main() {\n    println!(\"Hello, world!\");\n}</code>"))
     }
 }
