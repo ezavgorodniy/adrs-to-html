@@ -1,20 +1,29 @@
 use comrak::markdown_to_html;
 use std::fs;
+use fs_extra::dir::{copy, CopyOptions};
+mod generator;
 
 #[derive(Debug)]
-struct File {
+struct ReadFile {
     name: String,
     content: String,
+}
+
+struct CompiledFile {
+    name: String,
+    content: String,
+    generated_adr_content: String
 }
 
 fn main() {
     // Constants
     let src_dir = String::from("./content/src");
     let out_dir = String::from("./content/out");
+    let files_dir = String::from("./content/files");
 
     // The vector of files to be processed
-    let mut files: Vec<File> = vec![];
-    let mut files_compiled: Vec<File> = vec![];
+    let mut files: Vec<ReadFile> = vec![];
+    let mut files_compiled: Vec<CompiledFile> = vec![];
     let mut index = String::from("<ul>");
 
     // Delete the output directory
@@ -26,6 +35,11 @@ fn main() {
     // Create the output directory
     fs::create_dir(&out_dir).unwrap();
 
+    let mut options = CopyOptions::new();
+    options.overwrite = true;
+    options.content_only = true;
+    copy(&files_dir, &out_dir, &options).unwrap();
+
     // Read the files in the source directory
     println !("Reading files...");
     add_files(&mut files, src_dir);
@@ -35,10 +49,17 @@ fn main() {
 
     for file in files {
         let content = markdown_to_html(&file.content, &comrak::ComrakOptions::default());
+        let adr_html = generator::generate_adr_html(&file.content);
+        let generated_adr_content = if adr_html.is_err() {
+            String::from("Error while generation content")
+        } else {
+            adr_html.unwrap().to_string()
+        };
 
-        files_compiled.push(File {
+        files_compiled.push(CompiledFile {
             name: file.name,
             content,
+            generated_adr_content
         });
     }
 
@@ -48,6 +69,11 @@ fn main() {
         fs::write(
             format!("{}/{}", out_dir, file.name.replace(".md", ".html")),
             &file.content,
+        )
+        .unwrap();
+        fs::write(
+            format!("{}/{}", out_dir, file.name.replace(".md", "_adr.html")),
+            &file.generated_adr_content,
         )
         .unwrap();
 
@@ -70,7 +96,7 @@ fn main() {
     println!("Done!");
 }
 
-fn add_files(files: &mut Vec<File>, path: String) {
+fn add_files(files: &mut Vec<ReadFile>, path: String) {
     // Read the directory
     fs::read_dir(path).unwrap().for_each(|entry| {
         let entry = entry.unwrap();
@@ -82,7 +108,7 @@ fn add_files(files: &mut Vec<File>, path: String) {
             // .. Ignore directories
         } else {
             let content = fs::read_to_string(path).unwrap();
-            files.push(File { name, content });
+            files.push(ReadFile { name, content });
         }
     });
 }
