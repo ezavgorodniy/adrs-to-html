@@ -41,3 +41,7 @@ pub fn write_files(out_dir: &str, files: Vec<File>) {
         println!("Wrote file: {}", file.name);
     });
 }
+
+pub fn read_template(template_path: &str) -> String {
+    fs::read_to_string(template_path).unwrap()
+}

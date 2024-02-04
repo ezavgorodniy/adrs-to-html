@@ -1,14 +1,30 @@
 use markdown::{mdast, to_mdast, ParseOptions};
 use crate::files;
 
-pub fn process_files(files: Vec<files::File>) -> Vec<files::File> {
+const LIST_ADRS_PLACEHOLDER: &str = "{{LIST_ADRS}}";
+const ADR_PLACEHOLDER: &str = "{{ADR_CONTENT}}";
+
+pub fn process_files(files: &Vec<files::File>, template: &str) -> Vec<files::File> {
+    let list_adrs = generate_list_adrs(files);
     files.iter().map(|file| {
         let html_content = generate_adr_html(&file.content).unwrap();
         files::File {
             name: file.name.replace(".md", ".html"),
-            content: html_content,
+            content: template.replace(ADR_PLACEHOLDER, &html_content).replace(LIST_ADRS_PLACEHOLDER, &list_adrs),
         }
     }).collect()
+}
+
+fn generate_list_adrs(adrs: &Vec<files::File>) -> String {
+    let mut result = String::from("<ul>");
+    adrs.iter().for_each(|adr| {
+        if adr.name == "index.md" {
+            return;
+        }
+        result.push_str(&format!("<li><a href=\"{}\">{}</a></li>", adr.name.replace(".md", ".html"), adr.name.replace(".md", "")));
+    });
+    result.push_str("</ul>");
+    result
 }
 
 fn generate_adr_html(md: &str) -> Result<String, &'static str> {
@@ -147,5 +163,23 @@ mod tests {
         let result = generate_adr_html(&String::from("First Paragraph\n\nSecond Paragraph"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<p>First Paragraph</p><p>Second Paragraph</p>"))
+    }
+
+    #[test]
+    fn generate_list_adrs_should_return_ul_list() {
+        let files = vec![
+            files::File { name: String::from("test.md"), content: String::from("") },
+        ];
+        let result = generate_list_adrs(&files);
+        assert_eq!(result, String::from("<ul><li><a href=\"test.html\">test</a></li></ul>"))
+    }
+    #[test]
+    fn generate_list_adrs_should_ignore_index_md() {
+        let files = vec![
+            files::File { name: String::from("index.md"), content: String::from("") },
+            files::File { name: String::from("test.md"), content: String::from("") },
+        ];
+        let result = generate_list_adrs(&files);
+        assert_eq!(result, String::from("<ul><li><a href=\"test.html\">test</a></li></ul>"))
     }
 }
