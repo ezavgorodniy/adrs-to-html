@@ -49,6 +49,11 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                     process_node(result, internal_child);
                     result.push_str(&format!("</li>"));
                 },
+                mdast::Node::Paragraph(_) => {
+                    result.push_str(&format!("<p>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</p>"));
+                },
                 _ => {
                     result.push_str(&format!("<pre>"));
                     process_node(result, internal_child);
@@ -109,7 +114,7 @@ mod tests {
     fn generate_adr_html_link_should_return_anchor_tagged_text() {
         let result = generate_adr_html(&String::from("[Test](https://test.com)"));
         assert!(!result.is_err());
-        assert_eq!(result.unwrap(), String::from("<pre><a href=\"https://test.com\">Test</a></pre>"))
+        assert_eq!(result.unwrap(), String::from("<p><a href=\"https://test.com\">Test</a></p>"))
     }
 
     #[test]
@@ -124,6 +129,13 @@ mod tests {
         let result = generate_adr_html(&String::from("- Item1
         - Item2"));
         assert!(!result.is_err());
-        assert_eq!(result.unwrap(), String::from("<ul><li><pre>Item1\n- Item2</pre></li></ul>"))
+        assert_eq!(result.unwrap(), String::from("<ul><li><p>Item1\n- Item2</p></li></ul>"))
+    }
+
+    #[test]
+    fn generate_adr_html_paragraphs_should_return_paragraph_tag() {
+        let result = generate_adr_html(&String::from("First Paragraph\n\nSecond Paragraph"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<p>First Paragraph</p><p>Second Paragraph</p>"))
     }
 }
