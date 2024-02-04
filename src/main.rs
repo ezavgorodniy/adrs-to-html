@@ -1,4 +1,3 @@
-use comrak::markdown_to_html;
 use std::fs;
 use fs_extra::dir::{copy, CopyOptions};
 mod generator;
@@ -12,7 +11,6 @@ struct ReadFile {
 struct CompiledFile {
     name: String,
     content: String,
-    generated_adr_content: String
 }
 
 fn main() {
@@ -48,9 +46,8 @@ fn main() {
     println!("Compiling files...");
 
     for file in files {
-        let content = markdown_to_html(&file.content, &comrak::ComrakOptions::default());
         let adr_html = generator::generate_adr_html(&file.content);
-        let generated_adr_content = if adr_html.is_err() {
+        let content = if adr_html.is_err() {
             String::from("Error while generation content")
         } else {
             adr_html.unwrap().to_string()
@@ -59,7 +56,6 @@ fn main() {
         files_compiled.push(CompiledFile {
             name: file.name,
             content,
-            generated_adr_content
         });
     }
 
@@ -69,11 +65,6 @@ fn main() {
         fs::write(
             format!("{}/{}", out_dir, file.name.replace(".md", ".html")),
             &file.content,
-        )
-        .unwrap();
-        fs::write(
-            format!("{}/{}", out_dir, file.name.replace(".md", "_adr.html")),
-            &file.generated_adr_content,
         )
         .unwrap();
 
