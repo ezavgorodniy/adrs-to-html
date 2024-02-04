@@ -1,6 +1,17 @@
 use markdown::{mdast, to_mdast, ParseOptions};
+use crate::files;
 
-pub fn generate_adr_html(md: &str) -> Result<String, &'static str> {
+pub fn process_files(files: Vec<files::File>) -> Vec<files::File> {
+    files.iter().map(|file| {
+        let html_content = generate_adr_html(&file.content).unwrap();
+        files::File {
+            name: file.name.replace(".md", ".html"),
+            content: html_content,
+        }
+    }).collect()
+}
+
+fn generate_adr_html(md: &str) -> Result<String, &'static str> {
     let mdast = to_mdast(md, &ParseOptions::default());
     
     let mut result = String::from("");
@@ -12,7 +23,6 @@ pub fn generate_adr_html(md: &str) -> Result<String, &'static str> {
             return Err("Error while parsing md file")
         }
     }
-
 
     Ok(result)
 }
