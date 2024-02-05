@@ -80,6 +80,16 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                     process_node(result, internal_child);
                     result.push_str(&format!("</p>"));
                 },
+                mdast::Node::Emphasis(_) => {
+                    result.push_str(&format!("<span class=\"fst-italic\">"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</span>"));
+                },
+                mdast::Node::Strong(_) => {
+                    result.push_str(&format!("<strong>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</strong>"));
+                },
                 _ => {
                     result.push_str(&format!("<pre>"));
                     process_node(result, internal_child);
@@ -163,6 +173,20 @@ mod tests {
         let result = generate_adr_html(&String::from("First Paragraph\n\nSecond Paragraph"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<p>First Paragraph</p><p>Second Paragraph</p>"))
+    }
+
+    #[test]
+    fn generate_adr_html_italic_should_return_italic() {
+        let result = generate_adr_html(&String::from("*italic*"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<p><span class=\"fst-italic\">italic</span></p>"))
+    }
+
+    #[test]
+    fn generate_adr_html_italic_should_return_bold() {
+        let result = generate_adr_html(&String::from("**bold**"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<p><strong>bold</strong></p>"))
     }
 
     #[test]
