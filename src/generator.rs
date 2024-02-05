@@ -190,6 +190,13 @@ mod tests {
     }
 
     #[test]
+    fn generate_adr_html_italic_bold_should_return_bold_italic_span() {
+        let result = generate_adr_html(&String::from("***bold***"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<p><span class=\"fst-italic\"><strong>bold</strong></span></p>"))
+    }
+
+    #[test]
     fn generate_list_adrs_should_return_ul_list() {
         let files = vec![
             files::File { name: String::from("test.md"), content: String::from("") },
