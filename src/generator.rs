@@ -90,6 +90,11 @@ fn process_node(result: &mut String, node: &mdast::Node) {
                     process_node(result, internal_child);
                     result.push_str(&format!("</strong>"));
                 },
+                mdast::Node::BlockQuote(_) => {
+                    result.push_str(&format!("<blockquote class=\"blockquote\">"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</blockquote>"));
+                },
                 _ => {
                     result.push_str(&format!("<pre>"));
                     process_node(result, internal_child);
@@ -194,6 +199,12 @@ mod tests {
         let result = generate_adr_html(&String::from("***bold***"));
         assert!(!result.is_err());
         assert_eq!(result.unwrap(), String::from("<p><span class=\"fst-italic\"><strong>bold</strong></span></p>"))
+    }
+    #[test]
+    fn generate_adr_html_blockquote_should_return_blockquote() {
+        let result = generate_adr_html(&String::from("> the quote"));
+        assert!(!result.is_err());
+        assert_eq!(result.unwrap(), String::from("<blockquote class=\"blockquote\"><p>the quote</p></blockquote>"))
     }
 
     #[test]
