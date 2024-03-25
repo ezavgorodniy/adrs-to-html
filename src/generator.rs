@@ -16,12 +16,15 @@ pub fn process_files(files: &Vec<files::File>, template: &str) -> Vec<files::Fil
 }
 
 fn generate_list_adrs(adrs: &Vec<files::File>) -> String {
+    let mut names = adrs.iter().map(|adr| adr.name.clone()).collect::<Vec<String>>();
+    names.sort();
+
     let mut result = String::from("<ul>");
-    adrs.iter().for_each(|adr| {
-        if adr.name == "index.md" {
+    names.iter().for_each(|name| {
+        if name == "index.md" {
             return;
         }
-        result.push_str(&format!("<li><a href=\"{}\">{}</a></li>", adr.name.replace(".md", ".html"), adr.name.replace(".md", "")));
+        result.push_str(&format!("<li><a href=\"{}\">{}</a></li>", name.replace(".md", ".html"), name.replace(".md", "")));
     });
     result.push_str("</ul>");
     result
@@ -241,6 +244,18 @@ mod tests {
         let result = generate_list_adrs(&files);
         assert_eq!(result, String::from("<ul><li><a href=\"test.html\">test</a></li></ul>"))
     }
+
+    #[test]
+    fn generate_list_adrs_should_return_ul_list_sorted_by_name() {
+        let files = vec![
+            files::File { name: String::from("a.md"), content: String::from("") },
+            files::File { name: String::from("c.md"), content: String::from("") },
+            files::File { name: String::from("b.md"), content: String::from("") },
+        ];
+        let result = generate_list_adrs(&files);
+        assert_eq!(result, String::from("<ul><li><a href=\"a.html\">a</a></li><li><a href=\"b.html\">b</a></li><li><a href=\"c.html\">c</a></li></ul>"))
+    }
+
     #[test]
     fn generate_list_adrs_should_ignore_index_md() {
         let files = vec![
