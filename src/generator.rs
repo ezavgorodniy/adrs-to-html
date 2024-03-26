@@ -9,6 +9,7 @@ struct ParsedFile {
     name: String,
     content: String,
     status: String,
+    date: String,
 }
 
 pub fn process_files(files: &Vec<files::File>, template: &str) -> Vec<files::File> {
@@ -34,10 +35,12 @@ fn parse_files(files: &Vec<files::File>, template: &str) -> Vec<ParsedFile> {
         .iter()
         .map(|file| {
             let (status, content) = extract_status_from_adr_content(&file.content);
+            let (date, content) = extract_date_from_adr_content(&content);
             ParsedFile {
                 name: file.name.replace(".md", ".html"),
                 content: content,
                 status: status.unwrap_or_else(|| String::from("")),
+                date: date.unwrap_or_else(|| String::from("")),
             }
         })
         .collect();
@@ -152,6 +155,21 @@ fn extract_status_from_adr_content(content: &str) -> (Option<String>, String) {
             let pattern = regex::Regex::new(&format!(r#"(?i)status:\s*{}"#, escaped_status_value)).unwrap();
             modified_content = pattern.replace(&modified_content, "").trim().to_string();
             return (Some(status_value_str), modified_content);
+        }
+    }
+    (None, modified_content)
+}
+
+fn extract_date_from_adr_content(content: &str) -> (Option<String>, String) {
+    let mut modified_content = content.to_string();
+    let re = regex::Regex::new(r"(?i)date:\s*(.*)").unwrap();
+    if let Some(captures) = re.captures(&modified_content) {
+        if let Some(date_value) = captures.get(1) {
+            let date_value_str = date_value.as_str().trim().to_string();
+            let escaped_status_value = regex::escape(&date_value_str);
+            let pattern = regex::Regex::new(&format!(r#"(?i)date:\s*{}"#, escaped_status_value)).unwrap();
+            modified_content = pattern.replace(&modified_content, "").trim().to_string();
+            return (Some(date_value_str), modified_content);
         }
     }
     (None, modified_content)
@@ -315,6 +333,7 @@ mod tests {
             name: String::from("test.md"),
             content: String::from(""),
             status: String::from("Accepted"),
+            date: String::from("26-03-2024"),
         }];
         let result = generate_list_adrs(&files);
         assert_eq!(
@@ -330,16 +349,19 @@ mod tests {
                 name: String::from("a.md"),
                 content: String::from(""),
                 status: String::from("Accepted"),
+                date: String::from("26-03-2024"),
             },
             ParsedFile {
                 name: String::from("b.md"),
                 content: String::from(""),
                 status: String::from("Superseded"),
+                date: String::from("26-03-2024"),
             },
             ParsedFile {
                 name: String::from("c.md"),
                 content: String::from(""),
                 status: String::from("Rejected"),
+                date: String::from("26-03-2024"),
             },
         ];
         let result = generate_list_adrs(&files);
@@ -353,11 +375,13 @@ mod tests {
                 name: String::from("index.md"),
                 content: String::from(""),
                 status: String::from("Accepted"),
+                date: String::from("26-03-2024"),
             },
             ParsedFile {
                 name: String::from("test.md"),
                 content: String::from(""),
                 status: String::from("Accepted"),
+                date: String::from("26-03-2024"),
             },
         ];
         let result = generate_list_adrs(&files);
@@ -389,6 +413,22 @@ mod tests {
         let content = "some values Status: superseded by [0015-slo-as-code-usage-revised](0015-slo-as-code-usage-revised)";
         let (status, modified_content) = extract_status_from_adr_content(content);
         assert_eq!(status, Some(String::from("superseded by [0015-slo-as-code-usage-revised](0015-slo-as-code-usage-revised)")));
+        assert_eq!(modified_content, "some values");
+    }
+
+    #[test]
+    fn extract_date_from_content() {
+        let content = "some values date: 26-03-2024";
+        let (status, modified_content) = extract_date_from_adr_content(content);
+        assert_eq!(status, Some(String::from("26-03-2024")));
+        assert_eq!(modified_content, "some values");
+    }
+
+    #[test]
+    fn extract_date_from_content_case_insensitive() {
+        let content = "some values Date:     26-03-2024";
+        let (status, modified_content) = extract_date_from_adr_content(content);
+        assert_eq!(status, Some(String::from("26-03-2024")));
         assert_eq!(modified_content, "some values");
     }
 }
