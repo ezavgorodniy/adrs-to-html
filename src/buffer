@@ -1,0 +1,34 @@
+
+                mdast::Node::Image(image) => {
+                    result.push_str(&format!("<img src=\"{}\">", image.url));
+                    process_node(result, internal_child);
+                },
+                mdast::Node::Html(html) => {
+                    result.push_str(&format!("{}", html.value));
+                    process_node(result, internal_child);
+                },
+                mdast::Node::FootnoteReference(_) => {
+                    result.push_str(&format!("<sup>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</sup>"));
+                },
+                mdast::Node::FootnoteDefinition(_) => {
+                    result.push_str(&format!("<sup>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</sup>"));
+                },
+                mdast::Node::Table(_) => {
+                    result.push_str(&format!("<table>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</table>"));
+                },
+                mdast::Node::TableRow(_) => {
+                    result.push_str(&format!("<tr>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</tr>"));
+                },
+                mdast::Node::TableCell(_) => {
+                    result.push_str(&format!("<td>"));
+                    process_node(result, internal_child);
+                    result.push_str(&format!("</td>"));
+                },

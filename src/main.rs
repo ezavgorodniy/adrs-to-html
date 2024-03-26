@@ -1,5 +1,5 @@
-mod generator;
 mod files;
+mod generator;
 
 const TEMPLATE_DIR: &str = "./content/template.html";
 const SRC_DIR: &str = "./content/src";
@@ -10,7 +10,7 @@ fn main() {
     println!("Preparing output directory...");
     files::prepare_output_dir(&OUT_DIR, &FILES_DIR);
 
-    println !("Reading files...");
+    println!("Reading files...");
     let md_files = files::read_md_files(&SRC_DIR);
 
     println!("Compiling files...");

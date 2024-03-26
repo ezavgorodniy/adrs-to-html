@@ -21,7 +21,7 @@ pub fn read_md_files(dir: &str) -> Vec<File> {
 }
 
 pub fn prepare_output_dir(out_dir: &str, html_files_dir: &str) {
-use fs_extra::dir::{copy, CopyOptions};
+    use fs_extra::dir::{copy, CopyOptions};
     fs_extra::dir::create_all(&out_dir, true).unwrap();
 
     println!("Copying html files to output directory...");
@@ -33,11 +33,7 @@ use fs_extra::dir::{copy, CopyOptions};
 
 pub fn write_files(out_dir: &str, files: Vec<File>) {
     files.iter().for_each(|file| {
-        fs::write(
-            format!("{}/{}", out_dir, file.name),
-            &file.content,
-        )
-        .unwrap();
+        fs::write(format!("{}/{}", out_dir, file.name), &file.content).unwrap();
         println!("Wrote file: {}", file.name);
     });
 }
