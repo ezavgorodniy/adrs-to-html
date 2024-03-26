@@ -9,7 +9,7 @@ struct ParsedFile {
     name: String,
     content: String,
     status: String,
-    date: String,
+    date: String, // TODO: use it during renderer and perhaps for sorting
 }
 
 pub fn process_files(files: &Vec<files::File>, template: &str) -> Vec<files::File> {
